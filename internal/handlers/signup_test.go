@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -20,7 +21,7 @@ func (m *mockCreator2) Create(_ context.Context, key string, active bool, owner 
 	m.last.key = key
 	m.last.active = active
 	m.last.owner = owner
-	if m.fail { return errString("fail") }
+	if m.fail { return errors.New("fail") }
 	return nil
 }
 

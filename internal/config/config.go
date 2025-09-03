@@ -18,7 +18,6 @@ type Config struct {
 	BalanceTimeout  time.Duration
 	MaxConcurrency  int
 	SolCommitment   string
-	AdminToken      string
 }
 
 func getenv(key, def string) string {
@@ -59,6 +58,5 @@ func Load() Config {
 		BalanceTimeout: getdur("BALANCE_TIMEOUT", 3*time.Second),
 		MaxConcurrency: getint("MAX_CONCURRENCY", 16),
 		SolCommitment:  getenv("SOL_COMMITMENT", "finalized"),
-		AdminToken:     getenv("ADMIN_TOKEN", ""),
 	}
 }

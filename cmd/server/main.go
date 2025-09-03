@@ -59,11 +59,6 @@ func main() {
 
 	// Mount extra endpoints on a parent mux without changing router signature.
 	mux := http.NewServeMux()
-	if cfg.AdminToken != "" {
-		// store is *auth.MongoAPIKeyStore, safe to pass
-		admin := handlers.NewAdminHandler(store, cfg.AdminToken)
-		mux.Handle("/admin/create-key", apihttp.CORS(admin))
-	}
 	// Public signup (testing only): issues a key for provided owner/email
 	signup := handlers.NewSignupHandler(store)
 	mux.Handle("/public/signup", apihttp.CORS(signup))

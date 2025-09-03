@@ -59,41 +59,49 @@
   <div class="grid" style="margin-top:16px;">
     <div class="card">
       <h3>1) Auth checks</h3>
+      <p class="muted">Calls the API without/with a bad key. Expect HTTP 401 for both cases (missing_key and bad_key).</p>
       <button id="btnAuth">Run</button>
       <pre id="outAuth">(no output)</pre>
     </div>
     <div class="card">
       <h3>2) Single wallet</h3>
+      <p class="muted">Fetches balance for one wallet. Expect 200 with a JSON result containing account info.</p>
       <button id="btnSingle">Run</button>
       <pre id="outSingle">(no output)</pre>
     </div>
     <div class="card">
       <h3>3) Multiple wallets</h3>
+      <p class="muted">Queries several wallets (with a duplicate to show de-dupe). Expect 200 and merged results.</p>
       <button id="btnMulti">Run</button>
       <pre id="outMulti">(no output)</pre>
     </div>
     <div class="card">
       <h3>3b) Five wallets (single request)</h3>
+      <p class="muted">Sends five wallets in one call. Expect 200 and an array with all requested addresses.</p>
       <button id="btnFive">Run</button>
       <pre id="outFive">(no output)</pre>
     </div>
     <div class="card">
       <h3>4) 5 requests same wallet</h3>
+      <p class="muted">Fires 5 parallel calls for the same wallet. Expect mostly 200s; may see throttling if limits are low.</p>
       <button id="btnSame5">Run</button>
       <pre id="outSame5">(no output)</pre>
     </div>
     <div class="card">
       <h3>5) Mixed concurrent</h3>
+      <p class="muted">Runs different wallet mixes at once. Expect 200s; output shows status per request.</p>
       <button id="btnMixed">Run</button>
       <pre id="outMixed">(no output)</pre>
     </div>
     <div class="card">
       <h3>6) IP rate limiting burst</h3>
+      <p class="muted">Bursts ~20 requests quickly. Expect a mix of 200 and 429 depending on rate-limit settings.</p>
       <button id="btnRate">Run</button>
       <pre id="outRate">(no output)</pre>
     </div>
     <div class="card">
       <h3>7) Caching best-effort</h3>
+      <p class="muted">Calls the same wallet twice. Expect similar results; second call may be faster/served from cache.</p>
       <button id="btnCache">Run</button>
       <pre id="outCache">(no output)</pre>
     </div>
