@@ -1,0 +1,51 @@
+name: Go Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd='mongosh --quiet --eval "db.runCommand({ ping: 1 }).ok" localhost:27017/test'
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      MONGO_URI: mongodb://localhost:27017
+      MONGO_DB: solapi
+      HELIUS_RPC_URL: http://localhost:8899
+      RATE_LIMIT_RPM: "1000"
+      CACHE_TTL: 1s
+      KEY_CACHE_TTL: 1s
+      BALANCE_TIMEOUT: 3s
+      MAX_CONCURRENCY: "8"
+      SOL_COMMITMENT: finalized
+      PORT: "8080"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22.x'
+          cache: true
+
+      - name: Tidy
+        run: go mod tidy
+
+      - name: Verify build
+        run: go build ./...
+
+      - name: Run tests
+        run: go test ./... -count=1 -race -timeout=10m
