@@ -1,0 +1,35 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: solapi-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok" , "localhost:27017/test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: solapi-app
+    depends_on:
+      mongo:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      PORT: "8080"
+      MONGO_URI: "mongodb://mongo:27017"
+      MONGO_DB: "solapi"
+      SOL_COMMITMENT: "finalized"
+    ports:
+      - "8080:8080"
+
+volumes:
+  mongo-data:

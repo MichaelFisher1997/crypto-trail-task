@@ -4,7 +4,6 @@ go 1.24.0
 
 require (
 	github.com/gagliardetto/solana-go v1.8.1
-	github.com/go-chi/chi/v5 v5.0.12
 	go.mongodb.org/mongo-driver v1.16.0
 	golang.org/x/sync v0.7.0
 	golang.org/x/time v0.3.0
