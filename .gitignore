@@ -1,0 +1,56 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Binaries / build outputs
+bin/
+build/
+dist/
+.tmp/
+.tmp*/
+
+# Temporary files
+.tmp
+.tmp*/
+*.log
+logs/
+/tmp/
+/tmp/*
+
+# Coverage / test artifacts
+coverage.out
+coverage.html
+*.coverprofile
+
+# Dependency / cache directories
+vendor/
+/go/pkg/mod/
+/root/.cache/go-build/
+
+# Environment / secrets
+.env
+*.env
+.env.*
+!.env.example
+
+# Docker / compose overrides
+docker-compose.override.yml
+
+# Local runtime assets
+web/.cache/
+
+# Generated files
+/tmp/server

@@ -1,0 +1,19 @@
+# Air configuration for hot reloading Go server
+root = "."
+
+[build]
+# Build the server binary into a temporary path
+cmd = "go build -trimpath -ldflags='-s -w' -o ./tmp/server ./cmd/server"
+bin = "./tmp/server"
+# Watch these extensions
+include_ext = ["go", "mod", "sum"]
+# Skip these directories
+exclude_dir = ["tmp", "vendor", ".git"]
+# Debounce
+delay = 1000
+# Send SIGTERM and wait before SIGKILL
+kill_delay = 500
+
+[log]
+# Colorize logs
+color = true

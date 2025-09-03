@@ -1,0 +1,12 @@
+**/.git
+**/.github
+**/.idea
+**/.vscode
+**/node_modules
+**/bin
+**/out
+**/dist
+**/build
+**/*.log
+**/tmp
+.gitignore

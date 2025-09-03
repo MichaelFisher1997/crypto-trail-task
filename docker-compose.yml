@@ -1,0 +1,50 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: solapi-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok" , "localhost:27017/test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: solapi-app
+    depends_on:
+      mongo:
+        condition: service_healthy
+    volumes:
+      - ./:/app
+      - go-mod-cache:/go/pkg/mod
+      - go-build-cache:/root/.cache/go-build
+    env_file:
+      - .env
+    environment:
+      # Service
+      PORT: "8080"
+      # HELIUS_RPC_URL now comes from .env (not committed)
+      # Mongo connection
+      MONGO_URI: "mongodb://mongo:27017"
+      MONGO_DB: "solapi"
+      # Rate limiting & caching
+      RATE_LIMIT_RPM: "10"
+      CACHE_TTL: "10s"
+      KEY_CACHE_TTL: "60s"
+      BALANCE_TIMEOUT: "3s"
+      MAX_CONCURRENCY: "16"
+      SOL_COMMITMENT: "finalized"
+    ports:
+      - "8080:8080"
+
+volumes:
+  mongo-data:
+  go-mod-cache:
+  go-build-cache:

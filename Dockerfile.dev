@@ -1,0 +1,25 @@
+# Development Dockerfile
+FROM golang:1.24-alpine AS dev
+
+WORKDIR /app
+ENV CGO_ENABLED=0
+
+# Install dependencies required for `go install` and Git modules
+RUN apk add --no-cache git curl
+
+# Pre-cache modules separately for better layer reuse
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
+
+# Install Air for hot reloading
+RUN GOBIN=/usr/local/bin go install github.com/air-verse/air@latest
+
+# Copy the rest of the source (avoids invalidating cache too often)
+COPY . .
+
+# Expose API port
+EXPOSE 8080
+
+# Run Air with config
+CMD ["air", "-c", ".air.toml"]

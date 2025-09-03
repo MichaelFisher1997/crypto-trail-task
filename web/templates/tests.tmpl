@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SolAPI Demo Scenarios</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans'; padding: 24px; }
+    h1 { margin-top: 0; }
+    .row { margin: 10px 0; }
+    input, button { font-size: 14px; padding: 8px; }
+    label { display: block; margin: 8px 0 4px; }
+    pre { background:#f6f8fa; padding: 12px; border-radius: 6px; overflow:auto; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; }
+    .muted { color: #6b7280; }
+  </style>
+</head>
+<body>
+  <h1>SolAPI Demo Scenarios</h1>
+  <div class="card">
+    <div class="grid">
+      <div>
+        <label>Base URL</label>
+        <input id="baseUrl" type="text" style="width:100%" value="/" />
+      </div>
+      <div>
+        <label>API Key (X-API-Key)</label>
+        <input id="apiKey" type="text" style="width:100%" placeholder="paste API key or use Sign Up below" />
+      </div>
+    </div>
+    <div class="grid">
+      <div>
+        <label>Wallet 1</label>
+        <input id="w1" type="text" style="width:100%" value="MJKqp326RZCHnAAbew9MDdui3iCKWco7fsK9sVuZTX2" />
+      </div>
+      <div>
+        <label>Wallet 2</label>
+        <input id="w2" type="text" style="width:100%" value="52C9T2T7JRojtxumYnYZhyUmrN7kqzvCLc4Ksvjk7TxD" />
+      </div>
+      <div>
+        <label>Wallet 3</label>
+        <input id="w3" type="text" style="width:100%" value="8BseXT9EtoEhBTKFFYkwTnjKSUZwhtmdKY2Jrj8j45Rt" />
+      </div>
+      <div>
+        <label class="muted">(optional) Wallet 4</label>
+        <input id="w4" type="text" style="width:100%" value="GitYucwpNcg6Dx1Y15UQ9TQn8LZMX1uuqQNn8rXxEWNC" />
+      </div>
+      <div>
+        <label class="muted">(optional) Wallet 5</label>
+        <input id="w5" type="text" style="width:100%" value="9QgXqrgdbVU8KcpfskqJpAXKzbaYQJecgMAruSWoXDkM" />
+      </div>
+    </div>
+    <div class="row">
+      <button id="btnSignup">Sign Up (testing) → get API key</button>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:16px;">
+    <div class="card">
+      <h3>1) Auth checks</h3>
+      <button id="btnAuth">Run</button>
+      <pre id="outAuth">(no output)</pre>
+    </div>
+    <div class="card">
+      <h3>2) Single wallet</h3>
+      <button id="btnSingle">Run</button>
+      <pre id="outSingle">(no output)</pre>
+    </div>
+    <div class="card">
+      <h3>3) Multiple wallets</h3>
+      <button id="btnMulti">Run</button>
+      <pre id="outMulti">(no output)</pre>
+    </div>
+    <div class="card">
+      <h3>3b) Five wallets (single request)</h3>
+      <button id="btnFive">Run</button>
+      <pre id="outFive">(no output)</pre>
+    </div>
+    <div class="card">
+      <h3>4) 5 requests same wallet</h3>
+      <button id="btnSame5">Run</button>
+      <pre id="outSame5">(no output)</pre>
+    </div>
+    <div class="card">
+      <h3>5) Mixed concurrent</h3>
+      <button id="btnMixed">Run</button>
+      <pre id="outMixed">(no output)</pre>
+    </div>
+    <div class="card">
+      <h3>6) IP rate limiting burst</h3>
+      <button id="btnRate">Run</button>
+      <pre id="outRate">(no output)</pre>
+    </div>
+    <div class="card">
+      <h3>7) Caching best-effort</h3>
+      <button id="btnCache">Run</button>
+      <pre id="outCache">(no output)</pre>
+    </div>
+  </div>
+
+  <script>
+    const q = id => document.getElementById(id);
+    const j = o => JSON.stringify(o, null, 2);
+
+    function url(path){
+      const base = q('baseUrl').value.trim() || '/';
+      if (base.endsWith('/')) return base.replace(/\/$/, '') + path;
+      return base + path;
+    }
+
+    async function postBalance(apiKey, wallets){
+      const res = await fetch(url('/api/get-balance'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
+        body: JSON.stringify({ wallets })
+      });
+      const text = await res.text();
+      let data; try { data = JSON.parse(text); } catch { data = { raw: text }; }
+      return { status: res.status, data };
+    }
+
+    q('btnSignup').addEventListener('click', async () => {
+      const res = await fetch(url('/public/signup'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ owner: 'demo-ui' }) });
+      const text = await res.text();
+      let data; try { data = JSON.parse(text); } catch { data = { raw: text }; }
+      if (res.ok) { q('apiKey').value = data.key || data.api_key || ''; alert('API key set.'); }
+      else { alert('Signup failed: ' + res.status); }
+    });
+
+    q('btnAuth').addEventListener('click', async () => {
+      q('outAuth').textContent = 'Running...';
+      const r1 = await fetch(url('/api/get-balance'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ wallets: ['w'] }) });
+      const r2 = await fetch(url('/api/get-balance'), { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-API-Key': 'bad' }, body: JSON.stringify({ wallets: ['w'] }) });
+      q('outAuth').textContent = j({ missing_key: r1.status, bad_key: r2.status });
+    });
+
+    q('btnSingle').addEventListener('click', async () => {
+      const apiKey = q('apiKey').value.trim();
+      const w1 = q('w1').value.trim();
+      q('outSingle').textContent = 'Running...';
+      const r = await postBalance(apiKey, [w1]);
+      q('outSingle').textContent = j(r);
+    });
+
+    q('btnMulti').addEventListener('click', async () => {
+      const apiKey = q('apiKey').value.trim();
+      const ws = [q('w1').value.trim(), q('w2').value.trim(), q('w1').value.trim()].filter(Boolean);
+      q('outMulti').textContent = 'Running...';
+      const r = await postBalance(apiKey, ws);
+      q('outMulti').textContent = j(r);
+    });
+
+    q('btnFive').addEventListener('click', async () => {
+      const apiKey = q('apiKey').value.trim();
+      const ws = [q('w1').value.trim(), q('w2').value.trim(), q('w3').value.trim(), q('w4').value.trim(), q('w5').value.trim()].filter(Boolean);
+      q('outFive').textContent = 'Running...';
+      const r = await postBalance(apiKey, ws);
+      q('outFive').textContent = j(r);
+    });
+
+    q('btnSame5').addEventListener('click', async () => {
+      const apiKey = q('apiKey').value.trim();
+      const w1 = q('w1').value.trim();
+      q('outSame5').textContent = 'Running...';
+      const ps = Array.from({ length: 5 }).map(() => postBalance(apiKey, [w1]));
+      const rs = await Promise.all(ps);
+      q('outSame5').textContent = j(rs.map(x => x.status));
+    });
+
+    q('btnMixed').addEventListener('click', async () => {
+      const apiKey = q('apiKey').value.trim();
+      const w1 = q('w1').value.trim();
+      const w2 = q('w2').value.trim();
+      const w3 = q('w3').value.trim();
+      q('outMixed').textContent = 'Running...';
+      const rs = await Promise.all([
+        postBalance(apiKey, [w1]),
+        postBalance(apiKey, [w2]),
+        postBalance(apiKey, [w1, w2]),
+        postBalance(apiKey, [w1, w3]),
+      ]);
+      q('outMixed').textContent = j(rs.map(r => ({ status: r.status })));
+    });
+
+    q('btnRate').addEventListener('click', async () => {
+      const apiKey = q('apiKey').value.trim();
+      const w1 = q('w1').value.trim();
+      q('outRate').textContent = 'Running...';
+      const ps = Array.from({ length: 20 }).map(() => postBalance(apiKey, [w1]));
+      const rs = await Promise.all(ps);
+      const summary = rs.reduce((acc, r) => { acc[String(r.status)] = (acc[String(r.status)]||0)+1; return acc; }, {});
+      q('outRate').textContent = j({ summary });
+    });
+
+    q('btnCache').addEventListener('click', async () => {
+      const apiKey = q('apiKey').value.trim();
+      const w1 = q('w1').value.trim();
+      q('outCache').textContent = 'Running...';
+      const r1 = await postBalance(apiKey, [w1]);
+      // small delay to reduce 429 chance
+      await new Promise(r => setTimeout(r, 500));
+      const r2 = await postBalance(apiKey, [w1]);
+      q('outCache').textContent = j({ first: r1, second: r2 });
+    });
+  </script>
+</body>
+</html>

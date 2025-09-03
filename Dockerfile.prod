@@ -1,0 +1,20 @@
+# Production Dockerfile (minimal and fast)
+# 1) Build binary
+FROM golang:1.24-alpine AS builder
+WORKDIR /src
+ENV CGO_ENABLED=0
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
+COPY . .
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go build -trimpath -ldflags="-s -w" -o /out/server ./cmd/server
+
+# 2) Distroless final image
+FROM gcr.io/distroless/static-debian12:nonroot
+WORKDIR /app
+COPY --from=builder /out/server /app/server
+EXPOSE 8080
+USER nonroot:nonroot
+ENTRYPOINT ["/app/server"]
