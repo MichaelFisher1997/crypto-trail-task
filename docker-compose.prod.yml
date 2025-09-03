@@ -29,7 +29,7 @@ services:
       MONGO_DB: "solapi"
       SOL_COMMITMENT: "finalized"
     ports:
-      - "8080:8080"
+      - "7890:8080"
 
 volumes:
   mongo-data:
